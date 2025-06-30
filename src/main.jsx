@@ -10,11 +10,14 @@ import '@fontsource/poppins';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
-// ✅ Custom MUI Theme
+// 🟢 Import LocalizationProvider and Adapter
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+
 const theme = createTheme({
   palette: {
     primary: {
-       main: '#0D1B2A', 
+      main: '#0D1B2A',
       contrastText: '#fff',
     },
     secondary: {
@@ -46,7 +49,10 @@ ReactDOM.createRoot(rootEl).render(
       <BrowserRouter>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <App />
+          {/* 🟢 Wrap App in LocalizationProvider */}
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <App />
+          </LocalizationProvider>
         </ThemeProvider>
       </BrowserRouter>
     </Provider>

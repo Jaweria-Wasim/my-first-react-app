@@ -1,5 +1,7 @@
 // src/pages/Dashboard.jsx
 import { Box, Typography, Paper, useTheme, Grid } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+
 import GroupIcon from '@mui/icons-material/Group';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -11,15 +13,18 @@ import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 
 export default function Dashboard() {
   const theme = useTheme();
+  const navigate = useNavigate();
 
-  // Reusable card component
-  const Card = ({ icon: Icon, title, description, borderColor }) => (
+  // Reusable clickable card component
+  const Card = ({ icon: Icon, title, description, borderColor, onClick }) => (
     <Paper
       elevation={3}
+      onClick={onClick}
       sx={{
         p: 3,
         borderLeft: `6px solid ${borderColor}`,
         bgcolor: 'white',
+        cursor: onClick ? 'pointer' : 'default',
         transition: '0.3s',
         '&:hover': {
           transform: 'translateY(-4px)',
@@ -60,7 +65,7 @@ export default function Dashboard() {
           mb: 4,
         }}
       >
-         Welcome to the Dashboard
+        Welcome to the Dashboard
       </Typography>
 
       <Grid container spacing={3} justifyContent="center" maxWidth="lg">
@@ -70,6 +75,7 @@ export default function Dashboard() {
             title="Users"
             description="Manage all registered users"
             borderColor="#1976d2"
+            onClick={() => navigate('/users')}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={4}>
