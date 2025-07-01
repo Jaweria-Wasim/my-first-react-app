@@ -84,14 +84,16 @@ export default function UserList() {
               }}
             >
               <ListItemText
-                primary={`${user.firstName} ${user.lastName}`}
+                primary={`${user.firstName ?? ''} ${user.lastName ?? ''}`}
                 secondary={user.email}
               />
               <Stack direction="row" spacing={1}>
                 <Button
                   variant="outlined"
                   size="small"
-                  onClick={() => navigate(`/users/edit/${user.id}`)}
+                  onClick={() =>
+                    navigate(`/users/edit/${user.id}`, { state: { user } })
+                  }
                 >
                   Edit
                 </Button>

@@ -1,4 +1,4 @@
-// src/components/Header.jsx
+
 import { AppBar, Toolbar, Typography } from '@mui/material';
 
 export default function Header() {

@@ -1,7 +1,8 @@
+// src/redux/userSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../api/axios';
 
-// ✅ Load ALL users from DummyJSON (loop through paginated results)
+// ✅ Load ALL users once (from DummyJSON) — simulated pagination
 export const loadInitialUsers = createAsyncThunk(
   'users/loadInitialUsers',
   async () => {
@@ -13,7 +14,13 @@ export const loadInitialUsers = createAsyncThunk(
     do {
       const res = await api.get(`/users?limit=${limit}&skip=${skip}`);
       const { users, total: totalFromAPI } = res.data;
-      allUsers = [...allUsers, ...users];
+
+      const usersWithFullName = users.map((user) => ({
+        ...user,
+        fullName: `${user.firstName ?? ''} ${user.lastName ?? ''}`,
+      }));
+
+      allUsers = [...allUsers, ...usersWithFullName];
       total = totalFromAPI;
       skip += limit;
     } while (allUsers.length < total);
@@ -22,7 +29,7 @@ export const loadInitialUsers = createAsyncThunk(
   }
 );
 
-// ✅ Paginate + search from local allUsers
+// ✅ Paginate + search from local `allUsers`
 export const fetchUsers = createAsyncThunk(
   'users/fetchUsers',
   async (_, { getState }) => {
@@ -31,9 +38,7 @@ export const fetchUsers = createAsyncThunk(
     let filtered = allUsers;
     if (search) {
       filtered = filtered.filter((user) =>
-        `${user.firstName} ${user.lastName}`
-          .toLowerCase()
-          .includes(search.toLowerCase())
+        user.fullName?.toLowerCase().includes(search.toLowerCase())
       );
     }
 
@@ -51,7 +56,12 @@ export const fetchUsers = createAsyncThunk(
 export const addUser = createAsyncThunk(
   'users/addUser',
   async (user, { dispatch }) => {
-    const newUser = { ...user, id: Date.now() };
+    const newUser = {
+      ...user,
+      id: Date.now(),
+      fullName: `${user.firstName ?? ''} ${user.lastName ?? ''}`,
+    };
+
     dispatch(addUserToState(newUser));
     dispatch(fetchUsers());
     return newUser;
@@ -62,9 +72,14 @@ export const addUser = createAsyncThunk(
 export const updateUser = createAsyncThunk(
   'users/updateUser',
   async ({ id, data }, { dispatch }) => {
-    dispatch(updateUserInState({ id, data }));
+    const updatedUser = {
+      ...data,
+      fullName: `${data.firstName ?? ''} ${data.lastName ?? ''}`,
+    };
+
+    dispatch(updateUserInState({ id, data: updatedUser }));
     dispatch(fetchUsers());
-    return { id, data };
+    return { id, data: updatedUser };
   }
 );
 
@@ -96,11 +111,15 @@ const userSlice = createSlice({
     },
     setSearch: (state, action) => {
       state.search = action.payload;
-      state.page = 1;
+      state.page = 1; // reset to first page
     },
+
+    // ⬇ Add user to beginning of local state
     addUserToState: (state, action) => {
       state.allUsers.unshift(action.payload);
     },
+
+    // ⬇ Update existing user
     updateUserInState: (state, action) => {
       const { id, data } = action.payload;
       const index = state.allUsers.findIndex((u) => u.id === id);
@@ -108,12 +127,16 @@ const userSlice = createSlice({
         state.allUsers[index] = { ...state.allUsers[index], ...data };
       }
     },
+
+    // ⬇ Delete user by id
     deleteUserFromState: (state, action) => {
       state.allUsers = state.allUsers.filter((u) => u.id !== action.payload);
     },
   },
+
   extraReducers: (builder) => {
     builder
+      // ⬇ Load Initial
       .addCase(loadInitialUsers.pending, (state) => {
         state.loading = true;
       })
@@ -126,6 +149,7 @@ const userSlice = createSlice({
         state.error = action.error.message;
       })
 
+      // ⬇ Fetch Paged & Filtered
       .addCase(fetchUsers.pending, (state) => {
         state.loading = true;
       })
