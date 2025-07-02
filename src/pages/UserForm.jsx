@@ -351,7 +351,7 @@ export default function ProfileForm() {
                 onChange={(e, val) => formik.setFieldValue("age", val)}
                 valueLabelDisplay="on"
                 min={18}
-                max={100}
+                max={60}
               />
             </Box>
 
